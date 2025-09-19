@@ -14,7 +14,7 @@ pipeline {
 
                         // Handle detached HEAD (PR merge, etc.)
                         if (branch == "HEAD") {
-                            branch = sh(returnStdout: true, script: "git name-rev --name-only --abbrev-ref HEAD").trim()
+                            branch = sh(returnStdout: true, script: "git name-rev --abbrev-ref HEAD").trim()
                         }
                     }
 
