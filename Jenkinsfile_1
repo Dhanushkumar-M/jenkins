@@ -5,12 +5,16 @@ pipeline {
             steps {
                   // Script here is the scripting pipeline
                 script {
-                    echo "Environment - ${env.BRANCH_NAME}"
-                    if (env.BRANCH_NAME == "main") {
+                    // Try to read from Git if not set
+                    def branch = env.BRANCH_NAME ?: sh(returnStdout: true, script: "git rev-parse --abbrev-ref HEAD").trim()
+                    echo "Environment - ${branch}"
+
+                    if (branch == "main") {
                         echo "Deploying to PROD"
                     } else {
                         echo "Deploying to DEV"
                     }
+
                 }
             }
         }
