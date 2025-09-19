@@ -1,32 +1,33 @@
-pipeline {
-    agent any
+node {
+    stage('Checkout') {
+        // Make sure we have code in workspace
+        checkout scm
+    }
 
-    stages {
-        stage('Detect Branch') {
-            steps {
-                script {
-                    // Try Jenkins env first
-                    def branch = env.BRANCH_NAME
+    stage('Detect Branch') {
+        // Try Jenkins env first
+        def branch = env.BRANCH_NAME
 
-                    if (!branch) {
-                        // Fallback to git
-                        branch = sh(returnStdout: true, script: "git rev-parse --abbrev-ref HEAD").trim()
+        if (!branch) {
+            // Fallback to git
+            branch = sh(returnStdout: true, script: "git rev-parse --abbrev-ref HEAD").trim()
 
-                        // Handle detached HEAD (PR merge, etc.)
-                        if (branch == "HEAD") {
-                            branch = sh(returnStdout: true, script: "git name-rev --abbrev-ref HEAD").trim()
-                        }
-                    }
-
-                    echo "Environment - ${branch}"
-
-                    if (branch == "main") {
-                        echo "Deploying to PROD"
-                    } else {
-                        echo "Deploying to DEV"
-                    }
-                }
+            if (branch == "HEAD") {
+                branch = sh(returnStdout: true, script: "git name-rev --name-only HEAD").trim()
             }
+        }
+
+        // Normalize branch name
+        branch = branch.replaceFirst(/^remotes\/origin\//, '')
+
+        echo "Environment - ${branch}"
+
+        if (branch == "main") {
+            echo "Deploying to PROD"
+            // your prod deploy steps here
+        } else {
+            echo "Deploying to DEV"
+            // your dev deploy steps here
         }
     }
 }
