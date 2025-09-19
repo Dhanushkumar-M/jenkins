@@ -1,0 +1,61 @@
+pipeline{
+  agent any
+  environment{
+    APP_NAME = "sample-app"
+  }
+  options{
+    timestamps()
+  }
+  stages{
+    stage("Build"){
+      steps{
+        echo "${APP_NAME} is built..."
+      }
+    }  
+    stage("Test"){
+      steps{
+        echo "Test is completed.."
+      }
+    }  
+    stage("Package"){
+      parallel{
+        stage('Create JAR') {
+            steps {
+                echo "📦 JAR packaged."
+            }
+        }
+        stage('Docker Image') {
+            steps {
+                echo "🐳 Docker image built."
+            }
+        }
+      }
+    }
+  }
+     stage('Deploy') {
+            steps {
+                script {
+                    if (env.BRANCH_NAME == "main") {
+                        echo "🚀 Deploying ${APP_NAME} to PROD..."
+                        
+                    } else {
+                        echo "🚀 Deploying ${APP_NAME} to DEV..."
+                       
+                    }
+                }
+            }
+        }
+    }
+post {
+        success {
+            echo "✅ Pipeline completed successfully!"
+        }
+        failure {
+            echo "❌ Pipeline failed — check logs."
+        }
+        always {
+            echo "🔔 Pipeline run finished (success or fail)."
+        }
+    }
+}
+        
