@@ -1,12 +1,23 @@
 pipeline {
     agent any
+
     stages {
-        stage('Conditional Example') {
+        stage('Detect Branch') {
             steps {
-                  // Script here is the scripting pipeline
                 script {
-                    // Try to read from Git if not set
-                    def branch = env.BRANCH_NAME ?: sh(returnStdout: true, script: "git rev-parse --abbrev-ref HEAD").trim()
+                    // Try Jenkins env first
+                    def branch = env.BRANCH_NAME
+
+                    if (!branch) {
+                        // Fallback to git
+                        branch = sh(returnStdout: true, script: "git rev-parse --abbrev-ref HEAD").trim()
+
+                        // Handle detached HEAD (PR merge, etc.)
+                        if (branch == "HEAD") {
+                            branch = sh(returnStdout: true, script: "git name-rev --name-only HEAD").trim()
+                        }
+                    }
+
                     echo "Environment - ${branch}"
 
                     if (branch == "main") {
@@ -14,7 +25,6 @@ pipeline {
                     } else {
                         echo "Deploying to DEV"
                     }
-
                 }
             }
         }
