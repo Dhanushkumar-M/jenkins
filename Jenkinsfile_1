@@ -1,0 +1,17 @@
+pipeline {
+    agent any
+    stages {
+        stage('Conditional Example') {
+            steps {
+                  // Script here is the scripting pipeline
+                script {
+                    if (env.BRANCH_NAME == "main") {
+                        echo "Deploying to PROD"
+                    } else {
+                        echo "Deploying to DEV"
+                    }
+                }
+            }
+        }
+    }
+}
