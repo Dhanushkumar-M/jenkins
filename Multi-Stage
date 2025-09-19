@@ -7,6 +7,11 @@ pipeline{
     timestamps()
   }
   stages{
+    stage('Checkout') {
+            steps {
+                checkout scm
+            }
+        }
     stage("Build"){
       steps{
         echo "${APP_NAME} is built..."
@@ -34,13 +39,15 @@ pipeline{
      stage('Deploy') {
             steps {
                 script {
-                    if (env.BRANCH_NAME == "main") {
-                        echo "🚀 Deploying ${APP_NAME} to PROD..."
-                        
-                    } else {
-                        echo "🚀 Deploying ${APP_NAME} to DEV..."
-                       
-                    }
+                    def branch = env.BRANCH_NAME ?: sh(
+                        returnStdout: true,
+                        script: "git rev-parse --abbrev-ref HEAD || git name-rev --name-only HEAD"
+                    ).trim()
+
+                    branch = branch.replaceFirst(/^remotes\\/origin\\//, '').replaceFirst(/^.*\\//, '')
+
+                    echo "Environment - ${branch}"
+                    echo(branch == "main" ? "Deploying to PROD" : "Deploying to DEV")
                 }
             }
         }
